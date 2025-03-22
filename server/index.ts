@@ -2,6 +2,7 @@ import fastify from "fastify";
 import fastifyIO from "fastify-socket.io";
 import fastifyCors from "@fastify/cors";
 import { Server } from "socket.io";
+import { namespaces } from "./constants";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -28,11 +29,7 @@ server.ready().then(() => {
   console.log("server is ready");
   server.io.on("connection", (socket) => {
     console.log("A user connected");
-    socket.on("message-from-client", (data: { text: string }) => {
-      console.log("from-client", data.text);
-      // Emit the message to all connected clients
-      server.io.emit("message-from-server", { text: data.text });
-    });
+    server.io.emit("namespace-lists", namespaces);
   });
 });
 
