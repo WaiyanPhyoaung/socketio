@@ -12,20 +12,25 @@ declare module "fastify" {
 }
 
 const server = fastify({});
-
-// Declare a route
-server.get("/add-room", async (request, reply) => {
-  console.log("comming request");
-  wikiNs.addRoom(new Room(4, "deleted message"));
-  server.io.of("/wiki").emit("addRoom", wikiNs);
-  return wikiNs;
+await server.register(fastifyCors, {
+  origin: "http://localhost:5173",
 });
-
 await server.register(fastifyIO, {
   cors: {
     origin: "http://localhost:5173",
     methods: ["GET", "POST"],
   },
+});
+
+// Declare a route
+server.get("/namespaces", async (request, reply) => {
+  return namespaces;
+});
+server.get("/add-room", async (request, reply) => {
+  console.log("comming request");
+  wikiNs.addRoom(new Room(4, "deleted message"));
+  server.io.of("/wiki").emit("addRoom", wikiNs);
+  return wikiNs;
 });
 
 server.ready().then(() => {
@@ -34,7 +39,6 @@ server.ready().then(() => {
   server.io.on("connection", (socket) => {
     console.log(socket.id, "is connected");
     socket.join("chat");
-    server.io.emit("namespace-lists", namespaces);
   });
   server.io.of("/wiki").on("connection", (socket) => {
     console.log(socket.id, "is connected to wikinamespace");
