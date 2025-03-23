@@ -29,10 +29,9 @@ socket.on("fromChatRoom", (data) => {
   console.log("room data", data);
 });
 
-socket.on("namespace-lists", (data) => {
-  console.log("namespace-lists", data);
-  createNamespaceElement(namespacesContainer, data);
-});
+fetch(`${URL}/namespaces`)
+  .then((req) => req.json())
+  .then((data) => createNamespaceElement(namespacesContainer, data));
 
 function createNamespaceElement(
   container: HTMLDivElement,
