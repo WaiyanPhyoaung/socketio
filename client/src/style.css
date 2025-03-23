@@ -111,7 +111,7 @@ input {
   padding: 0;
   color: #3b4048;
   max-height: 85%;
-  overflow: scroll;
+  overflow: auto;
 }
 #messages li .user-image {
   /* width: 50px; */

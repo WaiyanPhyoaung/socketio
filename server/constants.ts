@@ -1,19 +1,19 @@
 import Namespace from "./classes/Namespace";
 import Room from "./classes/Room";
 
-const wikiNs = new Namespace(
+export const wikiNs = new Namespace(
   "0",
   "Wikipedia",
   "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/103px-Wikipedia-logo-v2.svg.png",
   "/wiki"
 );
-const mozNs = new Namespace(
+export const mozNs = new Namespace(
   "1",
   "Mozilla",
   "https://www.mozilla.org/media/img/logos/firefox/logo-quantum.9c5e96634f92.png",
   "/mozilla"
 );
-const linuxNs = new Namespace(
+export const linuxNs = new Namespace(
   "2",
   "Linux",
   "https://upload.wikimedia.org/wikipedia/commons/a/af/Tux.png",
