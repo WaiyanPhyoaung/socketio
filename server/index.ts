@@ -23,13 +23,9 @@ await server.register(fastifyIO, {
 });
 
 // Declare a route
-server.get("/namespaces", async (request, reply) => {
-  return namespaces;
-});
-server.get("/add-room", async (request, reply) => {
-  console.log("comming request");
+server.get("/nschange", async (request, reply) => {
   wikiNs.addRoom(new Room(4, "deleted message"));
-  server.io.of("/wiki").emit("addRoom", wikiNs);
+  server.io.of("/wiki").emit("nschange", wikiNs);
   return wikiNs;
 });
 
@@ -37,11 +33,24 @@ server.ready().then(() => {
   console.log("server is ready");
 
   server.io.on("connection", (socket) => {
-    console.log(socket.id, "is connected");
-    socket.join("chat");
+    console.log(socket.id, "is connected to main namespace");
+
+    // Send namespace list only once per connection
+    socket.emit("namespaceList", namespaces);
+
+    socket.on("disconnect", () => {
+      console.log(socket.id, "disconnected from main namespace");
+    });
   });
-  server.io.of("/wiki").on("connection", (socket) => {
-    console.log(socket.id, "is connected to wikinamespace");
+
+  namespaces.forEach((namespace: any) => {
+    server.io.of(namespace.endpoint).on("connection", (socket) => {
+      console.log(socket.id, "is connected to", namespace.endpoint);
+
+      socket.on("disconnect", () => {
+        console.log(socket.id, "disconnected from", namespace.endpoint);
+      });
+    });
   });
 });
 

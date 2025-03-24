@@ -1,5 +1,15 @@
 import { io } from "socket.io-client";
+import {
+  addListeners,
+  createNamespaceElement,
+  createRoomElement,
+} from "./utils";
 export const URL = "http://localhost:3000";
+
+const listeners = {
+  // this key must be same as server event
+  nschange: [],
+};
 
 const namespacesContainer = <HTMLDivElement>(
   document.querySelector("#namespaces")
@@ -8,72 +18,33 @@ const roomListContainer = <HTMLUListElement>(
   document.querySelector("#room-list")
 );
 
+export const namespaceListSockets: any = [];
+
 const socket = io(URL);
 
 socket.on("connect", () => {
   console.log("connected to server");
 });
 
-// wikiSocket.on("connect", () => {
-//   console.log("connected to wiki server");
-// });
-// wikiSocket.on("addRoom", (ns) => {
-//   console.log(ns);
-// });
+socket.on("namespaceList", (namespaceList) => {
+  namespacesContainer.innerHTML = "";
+  namespaceList.forEach((namespace: any) => {
+    // DOM parts
+    const namespaceElement = createNamespaceElement(
+      namespacesContainer,
+      namespace
+    );
 
-socket.on("messageFromWikiNamespace", (data) => {
-  console.log("data", data);
-});
-
-socket.on("fromChatRoom", (data) => {
-  console.log("room data", data);
-});
-
-fetch(`${URL}/namespaces`)
-  .then((req) => req.json())
-  .then((data) => createNamespaceElement(namespacesContainer, data));
-
-function createNamespaceElement(
-  container: HTMLDivElement,
-  namespaceLists: any
-) {
-  container.innerHTML = "";
-  namespaceLists.forEach((namespace: any) => {
-    // creating namespaces dynamically
+    // Socket parts
     const namespaceUrl = URL + namespace.endpoint;
-    console.log(namespaceUrl);
-    const thisNs = io(namespaceUrl);
-    thisNs.on("addRoom", (addedRoomNamespace) => {
-      console.log("new room received");
-      createRoomElement(roomListContainer, addedRoomNamespace);
-    });
-    const namespaceElement = document.createElement("div");
-    namespaceElement.className = "namespace";
-    namespaceElement.setAttribute("ns", namespace.endpoint);
-    const image = document.createElement("img");
-    image.src = namespace.image;
-    image.alt = namespace.name;
-    namespaceElement.appendChild(image);
+    if (!namespaceListSockets[namespace.id]) {
+      namespaceListSockets[namespace.id] = io(namespaceUrl);
+      addListeners(namespaceListSockets, listeners, "nschange", namespace.id);
+    }
 
     namespaceElement.addEventListener("click", () => {
       createRoomElement(roomListContainer, namespace);
     });
-    container.appendChild(namespaceElement);
   });
-  createRoomElement(roomListContainer, namespaceLists[0]);
-}
-
-function createRoomElement(container: HTMLUListElement, namespace: any) {
-  container.innerHTML = "";
-  namespace.rooms.forEach((room: any) => {
-    const roomElement = document.createElement("li");
-    const lockIcon = document.createElement("span");
-    lockIcon.className = room.privateRoom
-      ? "glyphicon glyphicon-lock"
-      : "glyphicon glyphicon-globe";
-    roomElement.className = "room";
-    roomElement.textContent = room.name;
-    roomElement.prepend(lockIcon);
-    container.appendChild(roomElement);
-  });
-}
+  createRoomElement(roomListContainer, namespaceList[0]);
+});
