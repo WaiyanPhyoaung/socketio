@@ -14,19 +14,21 @@ export function createNamespaceElement(
   return namespaceElement;
 }
 
-export function createRoomElement(container: HTMLUListElement, namespace: any) {
-  container.innerHTML = "";
-  namespace.rooms.forEach((room: any) => {
-    const roomElement = document.createElement("li");
-    const lockIcon = document.createElement("span");
-    lockIcon.className = room.privateRoom
-      ? "fa-solid fa-lock"
-      : "fa-solid fa-globe";
-    roomElement.className = "room";
-    roomElement.textContent = room.name;
-    roomElement.prepend(lockIcon);
-    container.appendChild(roomElement);
-  });
+export function createRoomElement(
+  roomListContainer: HTMLUListElement,
+  room: any
+) {
+  const roomElement = document.createElement("li");
+  const lockIcon = document.createElement("span");
+  lockIcon.className = room.privateRoom
+    ? "fa-solid fa-lock"
+    : "fa-solid fa-globe";
+  roomElement.className = "room";
+  roomElement.textContent = room.name;
+  roomElement.prepend(lockIcon);
+
+  roomListContainer.appendChild(roomElement);
+  return roomElement;
 }
 export function addListeners(
   sockets: any,

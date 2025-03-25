@@ -17,6 +17,8 @@ const namespacesContainer = <HTMLDivElement>(
 const roomListContainer = <HTMLUListElement>(
   document.querySelector("#room-list")
 );
+const currentRoom = <HTMLSpanElement>document.querySelector("#current-room");
+const userCount = <HTMLSpanElement>document.querySelector("#user-count");
 
 export const namespaceListSockets: any = [];
 
@@ -28,6 +30,16 @@ socket.on("connect", () => {
 
 socket.on("namespaceList", (namespaceList) => {
   namespacesContainer.innerHTML = "";
+
+  roomListContainer.innerHTML = "";
+  //first time default namespace and rooms
+  namespaceList[0].rooms.forEach((room: any) => {
+    const roomElement = createRoomElement(roomListContainer, room);
+    roomElement.addEventListener("click", () => {
+      joinRoom(namespaceList[0].id, room.name);
+    });
+  });
+
   namespaceList.forEach((namespace: any) => {
     // DOM parts
     const namespaceElement = createNamespaceElement(
@@ -43,8 +55,26 @@ socket.on("namespaceList", (namespaceList) => {
     }
 
     namespaceElement.addEventListener("click", () => {
-      createRoomElement(roomListContainer, namespace);
+      roomListContainer.innerHTML = "";
+
+      namespace.rooms.forEach((room: any) => {
+        const roomElement = createRoomElement(roomListContainer, room);
+        roomElement.addEventListener("click", () => {
+          joinRoom(namespace.id, room.name);
+        });
+      });
     });
   });
-  createRoomElement(roomListContainer, namespaceList[0]);
+
+  joinRoom(namespaceList[0].id, namespaceList[0].rooms[0].name);
 });
+
+export async function joinRoom(namespaceID: number, roomTitle: string) {
+  // everything from ackCB get as result
+  const ack = await namespaceListSockets[namespaceID].emitWithAck(
+    "joinroom",
+    roomTitle
+  );
+  currentRoom.textContent = roomTitle;
+  userCount.textContent = ack.numberOfUsers;
+}

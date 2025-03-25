@@ -47,6 +47,27 @@ server.ready().then(() => {
     server.io.of(namespace.endpoint).on("connection", (socket) => {
       console.log(socket.id, "is connected to", namespace.endpoint);
 
+      socket.on("joinroom", async (roomTitle, ackCB) => {
+        console.log("joining to the ", roomTitle);
+
+        // Before joining leave other rooms
+        Array.from(socket.rooms)
+          .slice(1)
+          .forEach((room) => {
+            socket.leave(room);
+          });
+
+        socket.join(roomTitle);
+
+        const connectedSockets = await server.io
+          .of(namespace.endpoint)
+          .in(roomTitle)
+          .fetchSockets();
+
+        ackCB({
+          numberOfUsers: connectedSockets.length,
+        });
+      });
       socket.on("disconnect", () => {
         console.log(socket.id, "disconnected from", namespace.endpoint);
       });
