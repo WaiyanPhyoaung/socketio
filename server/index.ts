@@ -68,6 +68,13 @@ server.ready().then(() => {
           numberOfUsers: connectedSockets.length,
         });
       });
+
+      socket.on("new-message", (message) => {
+        const rooms = Array.from(socket.rooms);
+        console.log(rooms[1]);
+
+        server.io.of(namespace.endpoint).to(rooms[1]).emit("messages", message);
+      });
       socket.on("disconnect", () => {
         console.log(socket.id, "disconnected from", namespace.endpoint);
       });

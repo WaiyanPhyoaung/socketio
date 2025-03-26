@@ -40,7 +40,7 @@ export function addListeners(
   if (listeners[listenerName][namespaceId]) return;
 
   sockets[namespaceId].on(listenerName, (data: any) => {
-    console.log("namespace changed!", data);
+    console.log(listenerName, data);
   });
 
   listeners[listenerName][namespaceId] = true;
