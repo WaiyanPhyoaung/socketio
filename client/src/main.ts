@@ -22,10 +22,15 @@ const currentRoom = <HTMLSpanElement>document.querySelector("#current-room");
 const userCount = <HTMLSpanElement>document.querySelector("#user-count");
 const messageForm = <HTMLFormElement>document.querySelector("#message-form");
 const userMessage = <HTMLInputElement>document.querySelector("#user-message");
+const messagesContainer = <HTMLUListElement>document.querySelector("#messages");
 
 export const namespaceListSockets: any = [];
+const credentials: any = {
+  username: "William",
+};
+credentials.username = prompt("Enter your username");
 
-const socket = io(URL);
+const socket = io(URL, { auth: credentials });
 let namespaceLists: any = [];
 
 socket.on("connect", () => {
@@ -44,7 +49,8 @@ socket.on("namespaceList", (namespaceList) => {
     });
   });
   namespaceLists = namespaceList;
-
+  const newUrl = window.location.origin + namespaceLists[0].endpoint;
+  window.history.pushState({ path: namespaceLists[0].endpoint }, "", newUrl);
   namespaceList.forEach((namespace: any) => {
     // DOM parts
     const namespaceElement = createNamespaceElement(
@@ -56,8 +62,33 @@ socket.on("namespaceList", (namespaceList) => {
     const namespaceUrl = URL + namespace.endpoint;
     if (!namespaceListSockets[namespace.id]) {
       namespaceListSockets[namespace.id] = io(namespaceUrl);
-      addListeners(namespaceListSockets, listeners, "nschange", namespace.id);
-      addListeners(namespaceListSockets, listeners, "messages", namespace.id);
+      addListeners(
+        namespaceListSockets,
+        listeners,
+        "nschange",
+        namespace.id,
+        (data: any) => console.log(data)
+      );
+      addListeners(
+        namespaceListSockets,
+        listeners,
+        "messages",
+        namespace.id,
+        (data: any) => {
+          const newMessage = ` <li>
+                        <div class="user-image">
+                        <img >
+                           <img width='20' height='20' src="https://eu.ui-avatars.com/api/?name=${data.username}">
+                        </div>
+                        <div class="user-message">
+                            <div class="user-name-time">${data.username} <span>${data.time}</span></div>
+                            <div class="message-text">${data.message}</div>
+                        </div>
+                    </li>`;
+
+          messagesContainer.innerHTML += newMessage;
+        }
+      );
     }
 
     namespaceElement.addEventListener("click", () => {
@@ -79,11 +110,13 @@ socket.on("namespaceList", (namespaceList) => {
 });
 
 messageForm.onsubmit = (event) => {
+  console.log("submitting");
   event.preventDefault();
 
   const currentNamespace = namespaceLists.find(
     (namespace: any) => namespace.endpoint === window.location.pathname
   );
+
   if (!currentNamespace) return;
 
   namespaceListSockets[currentNamespace.id].emit(

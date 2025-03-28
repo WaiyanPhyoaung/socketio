@@ -34,13 +34,14 @@ export function addListeners(
   sockets: any,
   listeners: Record<string, any>,
   listenerName: string,
-  namespaceId: number
+  namespaceId: number,
+  cb: (data: any) => void
 ) {
   // listeners.'listenerName'[0]
   if (listeners[listenerName][namespaceId]) return;
 
   sockets[namespaceId].on(listenerName, (data: any) => {
-    console.log(listenerName, data);
+    cb(data);
   });
 
   listeners[listenerName][namespaceId] = true;

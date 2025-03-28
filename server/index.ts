@@ -10,6 +10,8 @@ declare module "fastify" {
     io: Server;
   }
 }
+let username = "";
+let password = "";
 
 const server = fastify({});
 await server.register(fastifyCors, {
@@ -33,6 +35,7 @@ server.ready().then(() => {
   console.log("server is ready");
 
   server.io.on("connection", (socket) => {
+    username = socket.handshake.auth.username;
     console.log(socket.id, "is connected to main namespace");
 
     // Send namespace list only once per connection
@@ -71,9 +74,12 @@ server.ready().then(() => {
 
       socket.on("new-message", (message) => {
         const rooms = Array.from(socket.rooms);
-        console.log(rooms[1]);
-
-        server.io.of(namespace.endpoint).to(rooms[1]).emit("messages", message);
+        console.log("room1", rooms);
+        const time = new Date().toLocaleString();
+        server.io
+          .of(namespace.endpoint)
+          .to(rooms[1])
+          .emit("messages", { message, username, time });
       });
       socket.on("disconnect", () => {
         console.log(socket.id, "disconnected from", namespace.endpoint);
