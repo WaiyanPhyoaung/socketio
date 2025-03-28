@@ -37,7 +37,6 @@ export function addListeners(
   namespaceId: number,
   cb: (data: any) => void
 ) {
-  // listeners.'listenerName'[0]
   if (listeners[listenerName][namespaceId]) return;
 
   sockets[namespaceId].on(listenerName, (data: any) => {
