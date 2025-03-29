@@ -1,17 +1,18 @@
+export type MessageObj = { message: string; username: string; date: string };
 class Room {
-  private namespaceId: string = "";
+  public namespaceId: string = "";
   constructor(
-    private id: number,
-    private name: string,
-    private privateRoom: boolean = false,
-    private history: string[] = []
+    public id: number,
+    public name: string,
+    public privateRoom: boolean = false,
+    public history: MessageObj[] = []
   ) {}
 
   public setNamespaceId(namespaceId: string) {
     this.namespaceId = namespaceId;
   }
 
-  public addMessage(message: string) {
+  public addMessage(message: MessageObj) {
     this.history.push(message);
   }
 

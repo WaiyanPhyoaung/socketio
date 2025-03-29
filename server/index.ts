@@ -62,20 +62,30 @@ server.ready().then(() => {
 
         socket.join(roomTitle);
 
+        const currentRoom = namespace.rooms.find(
+          (room: Room) => room.name === roomTitle
+        );
+
         const connectedSockets = await server.io
           .of(namespace.endpoint)
           .in(roomTitle)
           .fetchSockets();
 
         ackCB({
+          messages: currentRoom.history,
           numberOfUsers: connectedSockets.length,
         });
       });
 
       socket.on("new-message", (message) => {
         const rooms = Array.from(socket.rooms);
-        console.log("room1", rooms);
         const time = new Date().toLocaleString();
+        const currentRoomObj = namespace.rooms.find(
+          (room: Room) => room.name === rooms[1]
+        );
+        if (!currentRoomObj) return;
+        currentRoomObj.addMessage({ message, username, time });
+
         server.io
           .of(namespace.endpoint)
           .to(rooms[1])

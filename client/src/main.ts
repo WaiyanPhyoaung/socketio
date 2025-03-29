@@ -74,17 +74,8 @@ socket.on("namespaceList", (namespaceList) => {
         listeners,
         "messages",
         namespace.id,
-        (data: any) => {
-          const newMessage = ` <li>
-                        <div class="user-image">
-                        <img >
-                           <img width='20' height='20' src="https://eu.ui-avatars.com/api/?name=${data.username}">
-                        </div>
-                        <div class="user-message">
-                            <div class="user-name-time">${data.username} <span>${data.time}</span></div>
-                            <div class="message-text">${data.message}</div>
-                        </div>
-                    </li>`;
+        (messageObj: any) => {
+          const newMessage = createMessageElement(messageObj);
 
           messagesContainer.innerHTML += newMessage;
         }
@@ -133,6 +124,25 @@ export async function joinRoom(namespaceID: number, roomTitle: string) {
     "joinroom",
     roomTitle
   );
+
+  console.log("ack", ack.messages);
+
+  ack.messages.forEach((message: any) => {
+    const messageEle = createMessageElement(message);
+    messagesContainer.innerHTML += messageEle;
+  });
   currentRoom.textContent = roomTitle;
   userCount.textContent = ack.numberOfUsers;
+}
+
+function createMessageElement(messageObj: any) {
+  return ` <li>
+              <div class="user-image">
+                  <img width='20' height='20' src="https://eu.ui-avatars.com/api/?name=${messageObj.username}">
+              </div>
+              <div class="user-message">
+                  <div class="user-name-time">${messageObj.username} <span>${messageObj.time}</span></div>
+                  <div class="message-text">${messageObj.message}</div>
+             </div>
+            </li>`;
 }
